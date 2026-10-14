@@ -119,6 +119,26 @@ class TestUrlParser:
         # Empty input
         assert parse_server_urls("") == []
 
+    def test_parse_server_urls_keeps_commas_inside_a_url(self):
+        result = parse_server_urls(
+            "https://mcp.exa.ai/mcp?tools=web_search_exa,get_code_context_exa,"
+            "HTTPS://example.com/mcp?a=1,2, http://localhost:8080/mcp"
+        )
+
+        assert [entry[2] for entry in result] == [
+            "https://mcp.exa.ai/mcp?tools=web_search_exa,get_code_context_exa",
+            "HTTPS://example.com/mcp?a=1,2",
+            "http://localhost:8080/mcp",
+        ]
+
+    @pytest.mark.parametrize(
+        "urls",
+        ["http://example.com/mcp,,http://other.com/mcp", ",http://example.com/mcp"],
+    )
+    def test_parse_server_urls_rejects_empty_segments_between_urls(self, urls: str):
+        with pytest.raises(ValueError, match="URL cannot be empty"):
+            parse_server_urls(urls)
+
     def test_parse_server_urls_rejects_empty_comma_segments(self):
         with pytest.raises(ValueError, match="URL cannot be empty"):
             parse_server_urls("http://example.com/mcp, ")

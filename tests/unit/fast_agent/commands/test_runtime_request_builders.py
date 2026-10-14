@@ -168,6 +168,53 @@ def test_startup_mcp_targets_share_ordered_naming_auth_and_protocol_semantics() 
     )
 
 
+def test_startup_url_with_commas_in_query_is_a_single_server() -> None:
+    request = build_agent_run_request(
+        name="test-agent",
+        instruction="instruction",
+        config_path=None,
+        servers=None,
+        urls=[
+            (
+                "https://mcp.exa.ai/mcp?tools=web_search_exa,get_code_context_exa,"
+                "https://example.com/mcp?tools=a,b"
+            )
+        ],
+        auth=None,
+        client_metadata_url=None,
+        mcp_protocol=None,
+        agent_cards=None,
+        card_tools=None,
+        model=None,
+        message=None,
+        prompt_file=None,
+        result_file=None,
+        resume=None,
+        stdio_commands=None,
+        agent_name="agent",
+        target_agent_name=None,
+        skills_directory=None,
+        home=None,
+        shell_enabled=False,
+        mode="interactive",
+        transport="http",
+        host="127.0.0.1",
+        port=8000,
+        tool_description=None,
+        tool_name_template=None,
+        instance_scope="shared",
+        permissions_enabled=True,
+        reload=False,
+        watch=False,
+    )
+
+    assert request.startup_mcp_servers is not None
+    assert [config.url for config in request.startup_mcp_servers.values()] == [
+        "https://mcp.exa.ai/mcp?tools=web_search_exa,get_code_context_exa",
+        "https://example.com/mcp?tools=a,b",
+    ]
+
+
 def test_startup_url_parity_is_case_insensitive_and_notices_are_redacted() -> None:
     request = build_agent_run_request(
         name="test-agent",

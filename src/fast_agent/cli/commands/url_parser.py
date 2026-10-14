@@ -13,6 +13,8 @@ from fast_agent.mcp.hf_auth import TokenProvider, add_hf_auth_header
 from fast_agent.utils.action_normalization import normalize_action_token
 from fast_agent.utils.text import strip_to_none
 
+_URL_LIST_SEPARATOR = re.compile(r",(?=\s*(?:https?://|,|$))", re.IGNORECASE)
+
 
 def _normalize_auth_token(auth_token: str) -> str:
     """Normalize ``--auth`` values into the raw token string.
@@ -130,6 +132,10 @@ def _is_ip_address(hostname: str) -> bool:
     return True
 
 
+def split_url_list(value: str) -> list[str]:
+    return [part.strip() for part in _URL_LIST_SEPARATOR.split(value)]
+
+
 def parse_server_urls(
     urls_param: str,
     auth_token: str | None = None,
@@ -154,7 +160,7 @@ def parse_server_urls(
     if not urls_param:
         return []
 
-    url_list = [strip_to_none(url) or "" for url in urls_param.split(",")]
+    url_list = split_url_list(urls_param)
 
     # Prepare headers if auth token is provided
     headers = None
